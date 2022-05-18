@@ -42,6 +42,7 @@ void showHelpHelp(std::string = "");
 bool validateHelp(int, char**);
 bool validateFinanceParameters(finance_params*, int, char**);
 double calculateMonthlyPayment(double, double, int);
+double calculateMonthlyPayment(finance_params, int = 0);
 
 int
 main(int argc, char** argv)
@@ -51,13 +52,32 @@ main(int argc, char** argv)
 	if (validateHelp(argc, argv)) return 0;
 
 	// Validate input parameters, if invalid, show the help message.
-	finance_params financeParameters = {};
-	if (!validateFinanceParameters(&financeParameters, argc, argv))
+	finance_params fParams = {};
+	if (!validateFinanceParameters(&fParams, argc, argv))
 		showHelpHelp("Please check your input and try again.");
 
-	// Perform the calculation.
-	double m = calculateMonthlyPayment(financeParameters._params[0],financeParameters._params[1],(int)financeParameters._params[2]);
-	std::cout << "\nMonthly payment is: " << m << std::endl;
+	// Print loan parameters to the user.
+	double per_apr = fParams.apr * 100.0;
+	for (int i = 0; i < 64+9; ++i) std::cout << "-"; std::cout << std::endl;
+	std::cout << std::setprecision(2) << std::showpoint << std::fixed;
+	std::cout << "Loan Amount: $" << fParams.balance << std::endl;
+	std::cout << "Anual Percentage Rage: " << per_apr << "%" << std::endl;
+
+	// Display the rates by term by building a table.
+	for (int i = 0; i < 64+9; ++i) std::cout << "-"; std::cout << std::endl;
+	std::cout << std::setw(16) << "Total Loan" << " | " << std::setw(16) << "Interest Paid"
+		<< " | " << std::setw(16) << "Monthly Cost" << " | " << std::setw(16) << "Term Length" << std::endl;
+	for (int i = 0; i < 64+9; ++i) std::cout << "-"; std::cout << std::endl;
+	for (int aterm = (int)fParams.term; aterm > 0; aterm -= 6)
+	{
+		double m = calculateMonthlyPayment(fParams, aterm);
+		double tloan = m*aterm;
+		double idiff = tloan - fParams.balance;
+		std::cout << std::right << std::fixed << std::setprecision(2) << std::showpoint;
+		std::cout << std::setw(16) << tloan << " | " << std::setw(16) << idiff << " | " << std::setw(16) << m
+				  << " | " << std::setw(16) << aterm << std::endl;
+	}
+
 	return 0;
 
 }
@@ -130,6 +150,17 @@ showHelpHelp(std::string reason)
 {
 	if (reason != "") std::cout << reason << std::endl;
 	std::cout << "Use -h or --help for additional information on how to use this program.\n";
+}
+
+/**
+ * An overloaded function alias which takes finance_params and an alt_term as arguments.
+ */
+internal inline double
+calculateMonthlyPayment(finance_params fParams, int alt_term)
+{
+	// Forward to the proper function.
+	return calculateMonthlyPayment(fParams.balance, fParams.apr,
+		(alt_term > 0) ? alt_term : (int)fParams.term);
 }
 
 /**
