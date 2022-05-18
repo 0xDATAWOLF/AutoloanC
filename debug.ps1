@@ -1,1 +1,1 @@
-devenv ./build/bin/Debug/autoloanc.exe
+devenv ./bin/Debug/autoloanc.exe

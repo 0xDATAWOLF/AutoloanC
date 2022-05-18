@@ -17,6 +17,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "./datatable.h"
+
 #define DEBUG_MODE 0
 
 #define internal static
@@ -56,27 +58,21 @@ main(int argc, char** argv)
 	if (!validateFinanceParameters(&fParams, argc, argv))
 		showHelpHelp("Please check your input and try again.");
 
-	// Print loan parameters to the user.
-	double per_apr = fParams.apr * 100.0;
-	for (int i = 0; i < 64+9; ++i) std::cout << "-"; std::cout << std::endl;
-	std::cout << std::setprecision(2) << std::showpoint << std::fixed;
-	std::cout << "Loan Amount: $" << fParams.balance << std::endl;
-	std::cout << "Anual Percentage Rage: " << per_apr << "%" << std::endl;
+	// Create a data table and initialize the column headers.
+	data_table<4> loanTable;
+	loanTable.set_headers({"Amount Financed", "Interest Paid", "Monthly Payment", "Term Length"});
 
-	// Display the rates by term by building a table.
-	for (int i = 0; i < 64+9; ++i) std::cout << "-"; std::cout << std::endl;
-	std::cout << std::setw(16) << "Total Loan" << " | " << std::setw(16) << "Interest Paid"
-		<< " | " << std::setw(16) << "Monthly Cost" << " | " << std::setw(16) << "Term Length" << std::endl;
-	for (int i = 0; i < 64+9; ++i) std::cout << "-"; std::cout << std::endl;
-	for (int aterm = (int)fParams.term; aterm > 0; aterm -= 6)
+	// Now build the table using term lengths.
+	for (int termLength = (int)fParams.term; termLength > 0; termLength -= 12)
 	{
-		double m = calculateMonthlyPayment(fParams, aterm);
-		double tloan = m*aterm;
+		double m = calculateMonthlyPayment(fParams, termLength);
+		double tloan = m*termLength;
 		double idiff = tloan - fParams.balance;
-		std::cout << std::right << std::fixed << std::setprecision(2) << std::showpoint;
-		std::cout << std::setw(16) << tloan << " | " << std::setw(16) << idiff << " | " << std::setw(16) << m
-				  << " | " << std::setw(16) << aterm << std::endl;
+		loanTable.push_row({std::to_string(tloan), std::to_string(idiff), std::to_string(m), std::to_string(termLength)});
 	}
+
+	// Print the table to the user.
+	std::cout << loanTable.build_ascii() << std::endl;
 
 	return 0;
 
