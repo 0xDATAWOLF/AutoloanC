@@ -17,6 +17,13 @@
 #include <stdlib.h>
 #include <assert.h>
 
+/**
+ * Platform specific headers, import as required.
+ */
+#if defined(WIN32)
+#else
+#endif
+
 #include "./datatable.h"
 
 #define DEBUG_MODE 0
@@ -58,21 +65,15 @@ main(int argc, char** argv)
 	if (!validateFinanceParameters(&fParams, argc, argv))
 		showHelpHelp("Please check your input and try again.");
 
-	// Create a data table and initialize the column headers.
-	data_table<4> loanTable;
-	loanTable.set_headers({"Amount Financed", "Interest Paid", "Monthly Payment", "Term Length"});
+	// Since we don't have switches present to determine how to build a table,
+	// we will just print the calculation to the user.
+	double m = calculateMonthlyPayment(fParams);
+	double tloan = m*fParams.term;
+	double idiff = tloan - fParams.balance;
 
-	// Now build the table using term lengths.
-	for (int termLength = (int)fParams.term; termLength > 0; termLength -= 12)
-	{
-		double m = calculateMonthlyPayment(fParams, termLength);
-		double tloan = m*termLength;
-		double idiff = tloan - fParams.balance;
-		loanTable.push_row({std::to_string(tloan), std::to_string(idiff), std::to_string(m), std::to_string(termLength)});
-	}
-
-	// Print the table to the user.
-	std::cout << loanTable.build_ascii() << std::endl;
+	std::cout << std::setprecision(2) << std::fixed << std::showpoint << std::left;
+	std::cout << "Amount Financed: $" << std::setw(12) << tloan << "Interest Paid: $" << std::setw(12) << idiff
+			  << "Monthly Payment: $" << std::setw(12) << m << "Term: " << std::setw(12) << std::to_string((int)fParams.term) + " months";
 
 	return 0;
 
