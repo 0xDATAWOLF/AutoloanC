@@ -2,7 +2,7 @@
  * Calculates the cost of an auto loan based on the information supplied by the user.
  * 
  * TODO:
- * 1.	Standard-output formatting.
+ * //1.	Standard-output formatting.
  * 2.	Output to text file.
  * 3.	Output to CSV.
  * 4.	Input validation (ensure numbers are represented as they should be, no bad input)

@@ -4,7 +4,6 @@
 #include <array>
 #include <string>
 #include <sstream>
-#include <functional>
 
 /** Define the data_table defaults. */
 #define MIN_COLUMN_SIZING 16
